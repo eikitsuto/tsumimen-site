@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>積麺 — 食べたラーメンを、積み上げよう。</title>
+    <meta
+      name="description"
+      content="一杯食べるごとに、丼がひとつ積み上がる。記録するほど塔が高くなっていく、ラーメン記録アプリ「積麺」。"
+    />
+    <meta
+      property="og:title"
+      content="積麺 — 食べたラーメンを、積み上げよう。"
+    />
+    <meta
+      property="og:description"
+      content="一杯食べるごとに、丼がひとつ積み上がる。記録するほど塔が高くなっていく、ラーメン記録アプリ。"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#E9E0CE" />
+    <link rel="icon" href="images/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap"
+    />
+    <style>
+      :root {
+        --paper: #f2ece0;
+        --paper-2: #e9e0ce;
+        --ink: #1f1a17;
+        --ink-2: #3e352d;
+        --ink-3: #6b5f4f;
+        --shu: #b23a24;
+        --kin: #e0a030;
+        --mute: #b9b0a2;
+        --mincho: "Kaisei Tokumin", "Hiragino Mincho ProN", serif;
+        --sans: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+        --gutter: 64px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-weight: 500;
+        line-height: 1.6;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      a {
+        color: inherit;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--mincho);
+        font-weight: 800;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      .sp {
+        display: none;
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 var(--gutter);
+      }
+      .eyebrow {
+        font: 700 13px/1 var(--sans);
+        letter-spacing: 0.24em;
+        color: var(--shu);
+        margin-bottom: 16px;
+      }
+
+      /* ボタン */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        height: 60px;
+        padding: 0 28px;
+        border: 1.5px solid var(--ink);
+        border-radius: 2px;
+        background: var(--ink);
+        color: var(--paper);
+        text-decoration: none;
+        font: 700 16px/1 var(--sans);
+        letter-spacing: 0.04em;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .btn:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 var(--shu);
+      }
+      .btn svg {
+        flex: none;
+        fill: currentColor;
+      }
+      .btn.sm {
+        height: 48px;
+        padding: 0 20px;
+        font-size: 14px;
+      }
+      .btn.light {
+        background: var(--paper);
+        color: var(--ink);
+        border-color: var(--paper);
+      }
+      .btn.light:hover {
+        box-shadow: 4px 4px 0 var(--kin);
+      }
+
+      /* 端末の枠 */
+      .phone {
+        flex: none;
+        width: var(--w, 281px);
+        padding: 7px;
+        background: var(--ink);
+        border-radius: calc(var(--w, 281px) * 0.15);
+      }
+      .phone img {
+        width: 100%;
+        aspect-ratio: 1206/2622;
+        object-fit: cover;
+        border-radius: calc(var(--w, 281px) * 0.125);
+        background: var(--paper);
+      }
+      .phone.shadow {
+        box-shadow: 10px 12px 0 rgba(31, 26, 23, 0.15);
+      }
+
+      /* ヘッダー */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--paper-2);
+        border-bottom: 1.5px solid var(--ink);
+        box-shadow: 0 4.5px 0 -3px var(--paper-2), 0 6px 0 -3px var(--ink);
+      }
+      .site-header .wrap {
+        height: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+      }
+      .brand img {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+        box-shadow: 0 0 0 1.5px var(--ink);
+      }
+      .brand span {
+        font: 800 24px/1 var(--mincho);
+        letter-spacing: 0.08em;
+      }
+      .site-header nav {
+        display: flex;
+        align-items: center;
+        gap: 36px;
+        font: 700 14px/1 var(--sans);
+      }
+      .site-header nav a.link {
+        text-decoration: none;
+      }
+      .site-header nav a.link:hover {
+        text-decoration: underline;
+        text-underline-offset: 6px;
+      }
+      .get-short {
+        display: none;
+      }
+
+      /* ヒーロー */
+      .hero .wrap {
+        position: relative;
+        min-height: 760px;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+      }
+      .hero-copy {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+      }
+      .hero h1 {
+        font-size: 56px;
+        line-height: 1.4;
+      }
+      .hero h1 span {
+        white-space: nowrap;
+      }
+      .hero-lead {
+        margin: 28px 0 40px;
+        max-width: 460px;
+        font-size: 18px;
+        line-height: 1.9;
+        color: var(--ink-2);
+      }
+      .hero-cta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .hero-cta small {
+        font: 500 13px/1.6 var(--sans);
+        color: var(--ink-3);
+      }
+      .hero-phones {
+        position: relative;
+        width: 600px;
+        height: 760px;
+        flex: none;
+      }
+      .hero-phones .back {
+        position: absolute;
+        left: 290px;
+        top: 120px;
+        --w: 242px;
+      }
+      .hero-phones .front {
+        position: absolute;
+        left: 30px;
+        top: 60px;
+        --w: 281px;
+      }
+
+      /* 使い方 */
+      .how {
+        background: var(--paper-2);
+        border-top: 1.5px solid var(--ink);
+        padding: 96px 0 112px;
+      }
+      .how h2,
+      .scenery h2 {
+        font-size: 44px;
+        line-height: 1.4;
+      }
+      .steps {
+        list-style: none;
+        margin: 64px 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 48px;
+      }
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+      }
+      .step-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .num {
+        flex: none;
+        width: 52px;
+        height: 52px;
+        border: 2px solid var(--shu);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--shu);
+        font: 800 26px/1 var(--mincho);
+        transform: rotate(-4deg);
+      }
+      .step h3 {
+        font-size: 24px;
+        line-height: 1.4;
+      }
+      .step p {
+        min-height: 60px;
+        margin-bottom: 12px;
+        font-size: 15px;
+        line-height: 1.9;
+        color: var(--ink-2);
+      }
+      .step .phone {
+        --w: 218px;
+      }
+
+      /* どこまで積める？ */
+      .scenery {
+        padding: 96px 0 0;
+        border-top: 1.5px solid var(--ink);
+        background: linear-gradient(
+          to top,
+          #f2ece0 0%,
+          #e3e6e1 30%,
+          #cdd8dd 60%,
+          #26334f 85%,
+          #1c2540 100%
+        );
+        overflow: hidden;
+      }
+      .scenery-head {
+        color: var(--paper);
+        margin-bottom: 56px;
+      }
+      .scenery-head .eyebrow {
+        color: var(--kin);
+      }
+      .scenery-head p.lead {
+        margin-top: 20px;
+        max-width: 520px;
+        font-size: 16px;
+        line-height: 1.9;
+        color: #dcd6cb;
+      }
+      .climb {
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      .climb li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      .climb .phone {
+        --w: 164px;
+      }
+      .climb li:nth-child(2) {
+        margin-bottom: 36px;
+      }
+      .climb li:nth-child(3) {
+        margin-bottom: 72px;
+      }
+      .climb li:nth-child(4) {
+        margin-bottom: 108px;
+      }
+      .climb li:nth-child(5) {
+        margin-bottom: 144px;
+      }
+      .climb .tag {
+        font: 700 13px/1 var(--sans);
+        letter-spacing: 0.08em;
+        padding: 8px 12px;
+        background: var(--paper);
+        border: 1.5px solid var(--ink);
+        border-radius: 2px;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .climb .tag b {
+        font: 800 18px/1 var(--mincho);
+        margin-right: 2px;
+      }
+      .scenery-foot {
+        height: 96px;
+      }
+
+      /* 最後の呼びかけ */
+      .cta {
+        background: var(--ink);
+        color: var(--paper);
+        text-align: center;
+        padding: 88px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+      }
+      .cta img {
+        width: 88px;
+        height: 88px;
+        border-radius: 20px;
+      }
+      .cta h2 {
+        font-size: 40px;
+        line-height: 1.4;
+      }
+      .site-footer {
+        background: var(--ink);
+        border-top: 1px solid rgba(242, 236, 224, 0.2);
+        color: var(--mute);
+        font: 500 13px/1 var(--sans);
+      }
+      .site-footer .wrap {
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .site-footer nav {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      .site-footer a {
+        text-decoration: none;
+      }
+      .site-footer a:hover {
+        color: var(--paper);
+      }
+
+      /* 中くらいの幅 */
+      @media (max-width: 1100px) {
+        :root {
+          --gutter: 40px;
+        }
+        .hero h1 {
+          font-size: 46px;
+        }
+        .hero-phones {
+          width: 480px;
+          height: 700px;
+        }
+        .hero-phones .back {
+          left: 220px;
+          top: 110px;
+          --w: 210px;
+        }
+        .hero-phones .front {
+          left: 0;
+          top: 50px;
+          --w: 250px;
+        }
+        .step .phone {
+          --w: 190px;
+        }
+        .climb .phone {
+          --w: 140px;
+        }
+      }
+      @media (max-width: 900px) {
+        .hero .wrap {
+          flex-direction: column;
+          align-items: flex-start;
+          padding-top: 64px;
+          min-height: 0;
+        }
+        .hero-phones {
+          width: 100%;
+          max-width: 560px;
+          height: 640px;
+          align-self: center;
+        }
+        .hero-phones .front {
+          left: calc(50% - 230px);
+          top: 0;
+        }
+        .hero-phones .back {
+          left: calc(50% + 10px);
+          top: 70px;
+        }
+        .steps {
+          grid-template-columns: 1fr;
+          gap: 48px;
+        }
+        .step {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          grid-template-rows: auto 1fr;
+          column-gap: 24px;
+          row-gap: 12px;
+          align-items: start;
+        }
+        .step .phone {
+          grid-row: 1 / 3;
+          grid-column: 1;
+          --w: 180px;
+        }
+        .step-head {
+          grid-column: 2;
+          padding-top: 8px;
+        }
+        .step p {
+          grid-column: 2;
+          min-height: 0;
+        }
+        .climb {
+          overflow-x: auto;
+          scrollbar-width: none;
+          justify-content: flex-start;
+          gap: 20px;
+          margin: 0 calc(var(--gutter) * -1);
+          padding: 0 var(--gutter) 8px;
+          scroll-snap-type: x mandatory;
+        }
+        .climb::-webkit-scrollbar {
+          display: none;
+        }
+        .climb li {
+          margin-bottom: 0 !important;
+          scroll-snap-align: start;
+        }
+        .scenery-foot {
+          height: 56px;
+        }
+      }
+
+      /* スマホ */
+      @media (max-width: 600px) {
+        :root {
+          --gutter: 24px;
+        }
+        .site-header .wrap {
+          height: 64px;
+          padding: 0 20px;
+        }
+        .site-header {
+          box-shadow: none;
+        }
+        .sp {
+          display: inline;
+        }
+        .brand {
+          gap: 10px;
+        }
+        .brand img {
+          width: 32px;
+          height: 32px;
+          border-radius: 7px;
+        }
+        .brand span {
+          font-size: 19px;
+          letter-spacing: 0.06em;
+        }
+        .site-header nav .link,
+        .get-long {
+          display: none;
+        }
+        .get-short {
+          display: flex;
+        }
+        .site-header .btn.sm {
+          height: 36px;
+          padding: 0 14px;
+          font-size: 12px;
+        }
+        .hero .wrap {
+          padding-top: 48px;
+          gap: 44px;
+        }
+        .hero h1 {
+          font-size: 34px;
+          line-height: 1.45;
+        }
+        .hero-lead {
+          margin: 20px 0 28px;
+          font-size: 15px;
+        }
+        .hero-lead br {
+          display: none;
+        }
+        .hero-phones {
+          height: auto;
+          display: flex;
+          justify-content: center;
+          padding-bottom: 0;
+        }
+        .hero-phones .back {
+          display: none;
+        }
+        .hero-phones .front {
+          position: static;
+          --w: 281px;
+          margin-bottom: -120px;
+        }
+        .hero {
+          overflow: hidden;
+          padding-bottom: 0;
+        }
+        .how {
+          padding: 64px 0 72px;
+          position: relative;
+          z-index: 1;
+        }
+        .how h2,
+        .scenery h2 {
+          font-size: 30px;
+        }
+        .steps {
+          margin-top: 40px;
+        }
+        .step {
+          column-gap: 18px;
+          row-gap: 10px;
+        }
+        .step .phone {
+          --w: 140px;
+        }
+        .step-head {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        .num {
+          width: 40px;
+          height: 40px;
+          font-size: 20px;
+        }
+        .step h3 {
+          font-size: 19px;
+        }
+        .step p {
+          font-size: 14px;
+          line-height: 1.8;
+        }
+        .scenery {
+          padding-top: 64px;
+        }
+        .scenery-head {
+          margin-bottom: 32px;
+        }
+        .scenery-head p.lead {
+          font-size: 14px;
+        }
+        .climb {
+          gap: 14px;
+        }
+        .climb .phone {
+          --w: 156px;
+        }
+        .cta {
+          padding: 64px 24px;
+          gap: 22px;
+        }
+        .cta img {
+          width: 72px;
+          height: 72px;
+          border-radius: 16px;
+        }
+        .cta h2 {
+          font-size: 28px;
+        }
+        .site-footer .wrap {
+          flex-direction: column-reverse;
+          justify-content: center;
+          padding: 32px 24px;
+          gap: 20px;
+          font-size: 12px;
+        }
+        .site-footer nav {
+          gap: 20px;
+          justify-content: center;
+        }
+      }
+      @media (max-width: 360px) {
+        .hero h1 {
+          font-size: 29px;
+        }
+        .step .phone {
+          --w: 118px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .btn {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="apple" viewBox="0 0 16 19">
+        <path
+          d="M13.3 10c0-2.4 2-3.5 2-3.6c-1.1-1.6-2.8-1.8-3.4-1.8c-1.4-.2-2.8.8-3.5.8s-1.8-.8-3-.8C3.8 4.7 2.3 5.6 1.5 7c-1.7 2.9-.4 7.1 1.2 9.4c.8 1.1 1.7 2.4 2.9 2.4c1.2 0 1.6-.8 3-.8s1.8.8 3 .7c1.3 0 2.1-1.1 2.8-2.3c.9-1.3 1.3-2.6 1.3-2.6s-2.4-.9-2.4-3.8zM11 3c.6-.8 1.1-1.8 1-2.9c-.9 0-2.1.6-2.7 1.4c-.6.7-1.1 1.8-1 2.8c1 .1 2.1-.5 2.7-1.3z"
+        />
+      </symbol>
+    </svg>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="#top" aria-label="積麺 トップへ">
+          <img src="images/icon.png" alt="" width="40" height="40" />
+          <span>積麺</span>
+        </a>
+        <nav aria-label="ページ内">
+          <a class="link" href="#how">使い方</a>
+          <a class="link" href="#scenery">どこまで積める？</a>
+          <a class="btn sm get-long" data-appstore href="#"
+            ><svg width="16" height="19" aria-hidden="true">
+              <use href="#apple" /></svg
+            >App Store で入手</a
+          >
+          <a class="btn sm get-short" data-appstore href="#">入手する</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap">
+          <div class="hero-copy">
+            <p class="eyebrow">ラーメン記録アプリ</p>
+            <h1>
+              <span>食べたラーメンを、</span><br /><span>積み上げよう。</span>
+            </h1>
+            <p class="hero-lead">
+              一杯食べるごとに、丼がひとつ積み上がる。<br />記録するほど、塔が高くなっていきます。
+            </p>
+            <div class="hero-cta">
+              <a class="btn" data-appstore href="#"
+                ><svg width="16" height="19" aria-hidden="true">
+                  <use href="#apple" /></svg
+                >App Store で入手</a
+              >
+              <small>無料 ・ iPhone 対応</small>
+            </div>
+          </div>
+          <div class="hero-phones">
+            <div class="phone shadow back">
+              <img
+                src="images/tower-120.png"
+                alt="120杯の塔。雲の上まで積み上がっている"
+                width="1000"
+                height="2174"
+              />
+            </div>
+            <div class="phone shadow front">
+              <img
+                src="images/tower-12.png"
+                alt="12杯の塔。店の中で丼が積み上がっている"
+                width="1000"
+                height="2174"
+                fetchpriority="high"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="how" id="how">
+        <div class="wrap">
+          <p class="eyebrow">使い方</p>
+          <h2>記録は、<br class="sp" />三つの手順だけ。</h2>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-head">
+                <span class="num" aria-hidden="true">一</span>
+                <h3>食べたら、記録する</h3>
+              </div>
+              <p>
+                スープの種類と店の名前を選ぶだけ。写真とひとことメモも残せます。
+              </p>
+              <div class="phone shadow">
+                <img
+                  src="images/record.png"
+                  alt="記録の画面。写真、日付、お店、味を選ぶ"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-head">
+                <span class="num" aria-hidden="true">二</span>
+                <h3>丼が、ひとつ積まれる</h3>
+              </div>
+              <p>
+                記録した一杯は、スープの色の丼になって塔のてっぺんに乗ります。
+              </p>
+              <div class="phone shadow">
+                <img
+                  src="images/tower-12.png"
+                  alt="味ごとに色の違う丼が積み上がった塔"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-head">
+                <span class="num" aria-hidden="true">三</span>
+                <h3>月ごとに、振り返る</h3>
+              </div>
+              <p>
+                これまでの丼を月ごとの棚に並べて、何をどれだけ食べたか一目で。
+              </p>
+              <div class="phone shadow">
+                <img
+                  src="images/shelf.png"
+                  alt="一覧の画面。月ごとの杯数と味の内訳"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="scenery" id="scenery">
+        <div class="wrap">
+          <div class="scenery-head">
+            <p class="eyebrow">どこまで積める？</p>
+            <h2>積むほどに、<br class="sp" />景色が変わる。</h2>
+            <p class="lead">
+              店の天井を突き破り、街を越え、雲の上へ。積み続けた先には、宇宙が待っています。
+            </p>
+          </div>
+          <ol class="climb">
+            <li>
+              <div class="phone">
+                <img
+                  src="images/tower-12.png"
+                  alt="12杯、店の中"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+              <span class="tag"><b>12</b>杯 店の中</span>
+            </li>
+            <li>
+              <div class="phone">
+                <img
+                  src="images/tower-30.png"
+                  alt="30杯、天井の上"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+              <span class="tag"><b>30</b>杯 天井の上</span>
+            </li>
+            <li>
+              <div class="phone">
+                <img
+                  src="images/tower-70.png"
+                  alt="70杯、街の上"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+              <span class="tag"><b>70</b>杯 街の上</span>
+            </li>
+            <li>
+              <div class="phone">
+                <img
+                  src="images/tower-120.png"
+                  alt="120杯、雲の上"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+              <span class="tag"><b>120</b>杯 雲の上</span>
+            </li>
+            <li>
+              <div class="phone">
+                <img
+                  src="images/tower-200.png"
+                  alt="200杯、宇宙"
+                  loading="lazy"
+                  width="1000"
+                  height="2174"
+                />
+              </div>
+              <span class="tag"><b>200</b>杯 宇宙</span>
+            </li>
+          </ol>
+          <div class="scenery-foot"></div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <img src="images/icon.png" alt="" width="88" height="88" />
+        <h2>最初の一杯を、<br class="sp" />ここに。</h2>
+        <a class="btn light" data-appstore href="#"
+          ><svg width="16" height="19" aria-hidden="true">
+            <use href="#apple" /></svg
+          >App Store で入手</a
+        >
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 積麺</span>
+        <nav aria-label="フッター">
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="support.html">サポート</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script>
+      // App Store の URL が決まったらここに入れる（例: https://apps.apple.com/jp/app/id0000000000）
+      const APP_STORE_URL = "";
+      if (APP_STORE_URL)
+        document
+          .querySelectorAll("[data-appstore]")
+          .forEach((a) => (a.href = APP_STORE_URL));
+    </script>
+  </body>
+</html>
